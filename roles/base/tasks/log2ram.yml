@@ -9,6 +9,7 @@
     path: /etc/log2ram.conf
     regexp: '^SIZE='
     line: "SIZE={{ log2ram_size }}"
+    create: true
   notify: restart log2ram
 
 - name: Ensure log2ram service is enabled and started
