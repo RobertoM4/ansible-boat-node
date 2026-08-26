@@ -1,0 +1,21 @@
+---
+- name: Include hostname tasks
+  ansible.builtin.import_tasks: hostname.yml
+
+- name: Include base package tasks
+  ansible.builtin.import_tasks: packages.yml
+
+- name: Include timezone tasks
+  ansible.builtin.import_tasks: timezone.yml
+
+- name: Include SSH hardening tasks
+  ansible.builtin.import_tasks: ssh_hardening.yml
+
+- name: Include unattended-upgrades tasks
+  ansible.builtin.import_tasks: unattended_upgrades.yml
+
+- name: Include journald tasks
+  ansible.builtin.import_tasks: journald.yml
+
+- name: Include log2ram tasks
+  ansible.builtin.import_tasks: log2ram.yml

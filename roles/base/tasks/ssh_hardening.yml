@@ -1,0 +1,16 @@
+---
+- name: Disable SSH password authentication
+  ansible.builtin.lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^#?\s*PasswordAuthentication\s'
+    line: "PasswordAuthentication {{ ssh_password_authentication }}"
+    validate: "sshd -t -f %s"
+  notify: restart sshd
+
+- name: Disable SSH root login
+  ansible.builtin.lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^#?\s*PermitRootLogin\s'
+    line: "PermitRootLogin {{ ssh_permit_root_login }}"
+    validate: "sshd -t -f %s"
+  notify: restart sshd

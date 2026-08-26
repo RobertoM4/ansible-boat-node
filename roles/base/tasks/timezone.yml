@@ -1,0 +1,15 @@
+---
+- name: Set /etc/timezone
+  ansible.builtin.copy:
+    content: "{{ timezone }}\n"
+    dest: /etc/timezone
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Link /etc/localtime to the configured timezone
+  ansible.builtin.file:
+    src: "/usr/share/zoneinfo/{{ timezone }}"
+    dest: /etc/localtime
+    state: link
+    force: true

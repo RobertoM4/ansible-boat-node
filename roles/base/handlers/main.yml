@@ -1,0 +1,15 @@
+---
+- name: restart sshd
+  ansible.builtin.service:
+    name: ssh
+    state: restarted
+
+- name: restart systemd-journald
+  ansible.builtin.service:
+    name: systemd-journald
+    state: restarted
+
+- name: restart log2ram
+  ansible.builtin.service:
+    name: log2ram
+    state: restarted

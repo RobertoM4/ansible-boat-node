@@ -1,0 +1,6 @@
+---
+- name: Configure boat nodes
+  hosts: boat_nodes
+  become: true
+  roles:
+    - base

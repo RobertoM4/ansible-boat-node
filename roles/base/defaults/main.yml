@@ -1,0 +1,15 @@
+---
+timezone: UTC
+
+base_packages:
+  - git
+  - vim
+  - python3-pip
+
+ssh_permit_root_login: "no"
+ssh_password_authentication: "no"
+
+journald_storage: volatile
+journald_runtime_max_use: "50M"
+
+log2ram_size: "128M"

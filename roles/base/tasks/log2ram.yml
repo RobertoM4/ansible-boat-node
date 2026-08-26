@@ -1,0 +1,18 @@
+---
+- name: Install log2ram package
+  ansible.builtin.apt:
+    name: log2ram
+    state: present
+
+- name: Configure log2ram size
+  ansible.builtin.lineinfile:
+    path: /etc/log2ram.conf
+    regexp: '^SIZE='
+    line: "SIZE={{ log2ram_size }}"
+  notify: restart log2ram
+
+- name: Ensure log2ram service is enabled and started
+  ansible.builtin.systemd:
+    name: log2ram
+    enabled: true
+    state: started
