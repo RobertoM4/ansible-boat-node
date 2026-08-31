@@ -1,0 +1,17 @@
+---
+- name: Deploy SQLite schema
+  ansible.builtin.copy:
+    src: schema.sql
+    dest: "{{ sensors_install_dir }}/schema.sql"
+    owner: root
+    group: "{{ sensors_service_user }}"
+    mode: "0644"
+
+- name: Deploy GPS NMEA logger script
+  ansible.builtin.template:
+    src: gps_logger.py.j2
+    dest: "{{ sensors_install_dir }}/gps_logger.py"
+    owner: root
+    group: "{{ sensors_service_user }}"
+    mode: "0755"
+  notify: restart boat-node-sensors

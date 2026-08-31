@@ -1,0 +1,16 @@
+---
+- name: Create boat-node install directory
+  ansible.builtin.file:
+    path: "{{ sensors_install_dir }}"
+    state: directory
+    owner: root
+    group: "{{ sensors_service_user }}"
+    mode: "0755"
+
+- name: Create boat-node data directory
+  ansible.builtin.file:
+    path: "{{ sensors_data_dir }}"
+    state: directory
+    owner: "{{ sensors_service_user }}"
+    group: "{{ sensors_service_user }}"
+    mode: "0750"

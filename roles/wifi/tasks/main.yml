@@ -1,0 +1,16 @@
+---
+- name: Ensure NetworkManager Wi-Fi connection profiles are present
+  community.general.nmcli:
+    type: wifi
+    conn_name: "{{ item.ssid }}"
+    ifname: "{{ wifi_interface }}"
+    ssid: "{{ item.ssid }}"
+    wifi_sec:
+      key-mgmt: wpa-psk
+      psk: "{{ item.psk }}"
+    autoconnect: "{{ item.autoconnect | default(true) }}"
+    state: present
+  loop: "{{ wifi_networks }}"
+  loop_control:
+    label: "{{ item.ssid }}"
+  no_log: true

@@ -1,0 +1,11 @@
+---
+wifi_interface: wlan0
+
+# Elenco delle reti Wi-Fi note (profili NetworkManager), es.:
+#   wifi_networks:
+#     - ssid: "{{ vault_home_wifi_ssid }}"
+#       psk: "{{ vault_home_wifi_psk }}"
+#       autoconnect: true
+# Le credenziali reali vivono cifrate in group_vars/all/vault.yml
+# (ansible-vault) — questo elenco resta vuoto di default.
+wifi_networks: []

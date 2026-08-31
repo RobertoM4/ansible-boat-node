@@ -1,0 +1,19 @@
+---
+- name: reload udev rules
+  ansible.builtin.command: udevadm control --reload-rules
+  changed_when: false
+  listen: reload udev
+
+- name: trigger udev
+  ansible.builtin.command: udevadm trigger
+  changed_when: false
+  listen: reload udev
+
+- name: reload systemd daemon
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: restart boat-node-sensors
+  ansible.builtin.service:
+    name: boat-node-sensors
+    state: restarted

@@ -1,0 +1,12 @@
+---
+- name: Create boat-node sensors service user
+  ansible.builtin.user:
+    name: "{{ sensors_service_user }}"
+    system: true
+    shell: /usr/sbin/nologin
+    home: "{{ sensors_data_dir }}"
+    create_home: false
+    groups:
+      - dialout
+      - gpio
+    append: true

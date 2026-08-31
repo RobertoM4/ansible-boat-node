@@ -1,0 +1,17 @@
+---
+timezone: Europe/Rome
+
+base_packages:
+  - git
+  - vim
+  - python3-pip
+  - i2c-tools
+
+# Reti Wi-Fi note del nodo: le credenziali reali sono in
+# group_vars/all/vault.yml (cifrato con ansible-vault). Aggiungere qui una
+# entry per rete (hotspot del telefono, wifi di casa, ...), NetworkManager
+# sceglie da solo a quale connettersi in base a quelle visibili.
+wifi_networks:
+  - ssid: "{{ vault_home_wifi_ssid }}"
+    psk: "{{ vault_home_wifi_psk }}"
+    autoconnect: true

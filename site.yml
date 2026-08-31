@@ -4,3 +4,5 @@
   become: true
   roles:
     - base
+    - wifi
+    - sensors

@@ -1,8 +1,0 @@
----
-timezone: Europe/Rome
-
-base_packages:
-  - git
-  - vim
-  - python3-pip
-  - i2c-tools

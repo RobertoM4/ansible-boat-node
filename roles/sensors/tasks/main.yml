@@ -1,0 +1,18 @@
+---
+- name: Include sensor package tasks
+  ansible.builtin.import_tasks: packages.yml
+
+- name: Include sensors service user tasks
+  ansible.builtin.import_tasks: user.yml
+
+- name: Include sensors directory tasks
+  ansible.builtin.import_tasks: directories.yml
+
+- name: Include GPS udev rule tasks
+  ansible.builtin.import_tasks: udev.yml
+
+- name: Include GPS logger deployment tasks
+  ansible.builtin.import_tasks: logger.yml
+
+- name: Include sensors systemd service tasks
+  ansible.builtin.import_tasks: service.yml

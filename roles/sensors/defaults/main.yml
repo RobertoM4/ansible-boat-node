@@ -1,0 +1,24 @@
+---
+sensors_packages:
+  - python3-serial
+  - python3-gpiozero
+
+sensors_service_user: boatnode
+sensors_install_dir: /opt/boat-node
+sensors_data_dir: /var/lib/boat-node
+sensors_db_path: "{{ sensors_data_dir }}/sensors.db"
+
+# ID USB del dongle GPS: servono a fissare la porta seriale a
+# /dev/{{ gps_udev_symlink }} indipendentemente dall'ordine di enumerazione
+# USB (cosa che cambia se si collega un altro dispositivo seriale, es. un
+# secondo adattatore per i sensori di temperatura).
+#
+# Sono placeholder: vanno sostituiti con i valori reali in group_vars/all.yml.
+# Per ricavarli, collegare SOLO il dongle GPS e lanciare:
+#   udevadm info -a -n /dev/ttyUSB0 | grep -E 'idVendor|idProduct'
+gps_usb_vendor_id: "CHANGEME"
+gps_usb_product_id: "CHANGEME"
+
+gps_udev_symlink: gps
+gps_serial_port: "/dev/{{ gps_udev_symlink }}"
+gps_serial_baud: 9600

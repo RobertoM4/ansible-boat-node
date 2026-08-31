@@ -1,0 +1,20 @@
+---
+- name: Fail if GPS USB vendor/product ID are not configured
+  ansible.builtin.fail:
+    msg: >-
+      gps_usb_vendor_id/gps_usb_product_id sono ancora al valore placeholder
+      "CHANGEME". Collega il dongle GPS al Pi, esegui
+      `udevadm info -a -n /dev/ttyUSB0 | grep -E "idVendor|idProduct"`
+      e imposta i valori reali in group_vars/all.yml prima di rilanciare il
+      playbook. Meglio fallire qui che installare in silenzio una regola udev
+      che non farà mai match.
+  when: gps_usb_vendor_id == "CHANGEME" or gps_usb_product_id == "CHANGEME"
+
+- name: Install udev rule to pin GPS serial device
+  ansible.builtin.template:
+    src: 99-gps.rules.j2
+    dest: /etc/udev/rules.d/99-gps.rules
+    owner: root
+    group: root
+    mode: "0644"
+  notify: reload udev

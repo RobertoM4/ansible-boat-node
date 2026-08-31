@@ -1,0 +1,6 @@
+# Gestito da Ansible (ruolo sensors) — non modificare a mano.
+#
+# Fissa il dongle GPS a /dev/{{ gps_udev_symlink }} in base a VID/PID USB,
+# indipendentemente dal nome /dev/ttyUSBx che il kernel gli assegna — che
+# cambia se si collega un altro dispositivo seriale prima del GPS.
+SUBSYSTEM=="tty", ATTRS{idVendor}=="{{ gps_usb_vendor_id }}", ATTRS{idProduct}=="{{ gps_usb_product_id }}", SYMLINK+="{{ gps_udev_symlink }}", GROUP="dialout", MODE="0660"

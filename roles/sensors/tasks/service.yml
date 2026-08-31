@@ -1,0 +1,18 @@
+---
+- name: Install boat-node-sensors systemd unit
+  ansible.builtin.template:
+    src: boat-node-sensors.service.j2
+    dest: /etc/systemd/system/boat-node-sensors.service
+    owner: root
+    group: root
+    mode: "0644"
+  notify:
+    - reload systemd daemon
+    - restart boat-node-sensors
+
+- name: Ensure boat-node-sensors service is enabled and started
+  ansible.builtin.systemd:
+    name: boat-node-sensors
+    enabled: true
+    state: started
+    daemon_reload: true

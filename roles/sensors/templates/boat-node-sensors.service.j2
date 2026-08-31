@@ -1,0 +1,20 @@
+# Gestito da Ansible (ruolo sensors) — non modificare a mano.
+[Unit]
+Description=Boat-node sensor logger (NMEA GPS -> SQLite)
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+User={{ sensors_service_user }}
+Group={{ sensors_service_user }}
+WorkingDirectory={{ sensors_install_dir }}
+ExecStart=/usr/bin/python3 {{ sensors_install_dir }}/gps_logger.py
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=boat-node-sensors
+
+[Install]
+WantedBy=multi-user.target

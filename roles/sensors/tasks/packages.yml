@@ -1,0 +1,5 @@
+---
+- name: Install sensor Python packages
+  ansible.builtin.apt:
+    name: "{{ sensors_packages }}"
+    state: present
