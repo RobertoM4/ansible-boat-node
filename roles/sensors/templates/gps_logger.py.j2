@@ -5,6 +5,7 @@
 # e le scrive su SQLite in WAL mode con commit raggruppati (non una
 # scrittura per lettura) per non consumare la microSD.
 
+import math
 import sqlite3
 import sys
 import time
@@ -19,6 +20,15 @@ SCHEMA_PATH = "{{ sensors_install_dir }}/schema.sql"
 
 BATCH_SIZE = 20
 BATCH_INTERVAL_S = 5.0
+
+# Allarme drift ormeggio — vedi roles/sensors/defaults/main.yml per il
+# significato di ciascun parametro e come ricavare il punto di riferimento.
+MOORING_REF_LAT = {{ 'None' if mooring_ref_lat is none else mooring_ref_lat }}
+MOORING_REF_LON = {{ 'None' if mooring_ref_lon is none else mooring_ref_lon }}
+MOORING_ALERT_RADIUS_M = {{ mooring_alert_radius_m }}
+MOORING_ALERT_CONFIRM_READINGS = {{ mooring_alert_confirm_readings }}
+MOORING_MIN_FIX_QUALITY = 1
+MOORING_MIN_SATELLITES = 4
 
 
 def open_db():
@@ -64,7 +74,64 @@ def parse_gga(fields):
     if lat is not None and lon is not None:
         readings.append((ts, "gps_lat", lat))
         readings.append((ts, "gps_lon", lon))
-    return readings
+    return readings, ts, fix_quality, num_sats, lat, lon
+
+
+def haversine_m(lat1, lon1, lat2, lon2):
+    r = 6371000.0
+    p1, p2 = math.radians(lat1), math.radians(lat2)
+    dp = math.radians(lat2 - lat1)
+    dl = math.radians(lon2 - lon1)
+    a = math.sin(dp / 2) ** 2 + math.cos(p1) * math.cos(p2) * math.sin(dl / 2) ** 2
+    return 2 * r * math.asin(math.sqrt(a))
+
+
+class DriftMonitor:
+    """Allarme drift ormeggio con debounce + isteresi.
+
+    Serve perche' un singolo fix GPS civile puo' saltare di 2-5m per rumore
+    anche da fermo: senza debounce/isteresi si spammerebbero falsi allarmi
+    (e falsi "rientri") ad ogni lettura mentre si oscilla intorno alla soglia.
+    """
+
+    def __init__(self, conn):
+        self.conn = conn
+        self.enabled = MOORING_REF_LAT is not None and MOORING_REF_LON is not None
+        self.consecutive_over = 0
+        self.consecutive_under = 0
+        self.triggered = False
+
+    def check(self, ts, fix_quality, num_sats, lat, lon):
+        if not self.enabled or lat is None or lon is None:
+            return
+        if fix_quality < MOORING_MIN_FIX_QUALITY or num_sats < MOORING_MIN_SATELLITES:
+            return
+
+        distance_m = haversine_m(MOORING_REF_LAT, MOORING_REF_LON, lat, lon)
+        over = distance_m > MOORING_ALERT_RADIUS_M
+
+        if over:
+            self.consecutive_over += 1
+            self.consecutive_under = 0
+        else:
+            self.consecutive_under += 1
+            self.consecutive_over = 0
+
+        if not self.triggered and self.consecutive_over >= MOORING_ALERT_CONFIRM_READINGS:
+            self.triggered = True
+            self._record(ts, "triggered", distance_m)
+        elif self.triggered and self.consecutive_under >= MOORING_ALERT_CONFIRM_READINGS:
+            self.triggered = False
+            self._record(ts, "cleared", distance_m)
+
+    def _record(self, ts, state, distance_m):
+        detail = f"{distance_m:.1f}m dal punto di riferimento"
+        print(f"ALERT mooring_drift {state}: {detail}", file=sys.stderr, flush=True)
+        self.conn.execute(
+            "INSERT INTO alerts (ts, kind, state, detail) VALUES (?, 'mooring_drift', ?, ?)",
+            (ts, state, detail),
+        )
+        self.conn.commit()
 
 
 def flush_batch(conn, batch):
@@ -75,7 +142,7 @@ def flush_batch(conn, batch):
     batch.clear()
 
 
-def read_loop(conn):
+def read_loop(conn, drift_monitor):
     batch = []
     last_flush = time.monotonic()
     with serial.Serial(SERIAL_PORT, SERIAL_BAUD, timeout=1) as ser:
@@ -84,9 +151,11 @@ def read_loop(conn):
 
             if raw.startswith("$GPGGA") or raw.startswith("$GNGGA"):
                 fields = raw.split("*")[0].split(",")
-                readings = parse_gga(fields)
-                if readings:
+                parsed = parse_gga(fields)
+                if parsed:
+                    readings, ts, fix_quality, num_sats, lat, lon = parsed
                     batch.extend(readings)
+                    drift_monitor.check(ts, fix_quality, num_sats, lat, lon)
 
             now = time.monotonic()
             if batch and (len(batch) >= BATCH_SIZE or now - last_flush >= BATCH_INTERVAL_S):
@@ -96,9 +165,10 @@ def read_loop(conn):
 
 def main():
     conn = open_db()
+    drift_monitor = DriftMonitor(conn)
     while True:
         try:
-            read_loop(conn)
+            read_loop(conn, drift_monitor)
         except serial.SerialException as exc:
             print(
                 f"Errore seriale ({SERIAL_PORT}): {exc}, riconnessione tra 5s",

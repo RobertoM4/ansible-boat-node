@@ -22,3 +22,28 @@ gps_usb_product_id: "CHANGEME"
 gps_udev_symlink: gps
 gps_serial_port: "/dev/{{ gps_udev_symlink }}"
 gps_serial_baud: 9600
+
+# Allarme drift ormeggio: distanza da un punto di riferimento fisso.
+# Restano null finche' non li imposti tu in group_vars/all/vars.yml, una
+# volta che il Pi e' ormeggiato in modo stabile — con null il controllo e'
+# disattivato (nessun allarme falso durante i test sul banco). Per
+# ricavarli, dopo qualche minuto ormeggiato:
+#   sudo python3 -c "
+#   import sqlite3
+#   c = sqlite3.connect('/var/lib/boat-node/sensors.db')
+#   print(c.execute(\"select avg(value) from readings where source='gps_lat' and ts > datetime('now','-5 minutes')\").fetchone())
+#   print(c.execute(\"select avg(value) from readings where source='gps_lon' and ts > datetime('now','-5 minutes')\").fetchone())
+#   "
+mooring_ref_lat: null
+mooring_ref_lon: null
+
+# Raggio di tolleranza in metri prima di considerare l'allarme "drift".
+# Il fix GPS civile (quality=1, senza correzione differenziale) ha un
+# rumore tipico di 2-5m anche da fermo: non scendere sotto ~15m o rischi
+# falsi allarmi.
+mooring_alert_radius_m: 30
+
+# Letture consecutive sopra soglia prima di scattare (debounce contro il
+# rumore del fix) e sotto soglia prima di riarmare (isteresi, evita di
+# rispammare l'allarme mentre resta alla deriva).
+mooring_alert_confirm_readings: 3

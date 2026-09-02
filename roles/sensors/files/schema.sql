@@ -11,3 +11,14 @@ CREATE TABLE IF NOT EXISTS readings (
 );
 
 CREATE INDEX IF NOT EXISTS idx_readings_source_ts ON readings (source, ts);
+
+-- Eventi di allarme (drift ormeggio, e in futuro batteria/bilge): tabella
+-- separata dalle letture grezze cosi' restano un log durevole anche se in
+-- futuro le readings vengono ruotate/potate.
+CREATE TABLE IF NOT EXISTS alerts (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    ts         TEXT NOT NULL,   -- ISO 8601 UTC
+    kind       TEXT NOT NULL,   -- es. mooring_drift
+    state      TEXT NOT NULL,   -- 'triggered' o 'cleared'
+    detail     TEXT             -- es. "42.3m dal punto di riferimento"
+);
