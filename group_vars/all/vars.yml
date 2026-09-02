@@ -15,3 +15,8 @@ wifi_networks:
   - ssid: "{{ vault_home_wifi_ssid }}"
     psk: "{{ vault_home_wifi_psk }}"
     autoconnect: true
+
+# Dongle GPS u-blox 7, ricavati con:
+#   udevadm info -a -n /dev/ttyACM0 | grep -E 'idVendor|idProduct'
+gps_usb_vendor_id: "1546"
+gps_usb_product_id: "01a7"
