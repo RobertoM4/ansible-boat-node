@@ -1,0 +1,11 @@
+---
+- name: Install avahi-daemon (mDNS, so boat-node.local resolves on the LAN)
+  ansible.builtin.apt:
+    name: avahi-daemon
+    state: present
+
+- name: Ensure avahi-daemon service is enabled and started
+  ansible.builtin.systemd:
+    name: avahi-daemon
+    enabled: true
+    state: started

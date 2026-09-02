@@ -19,3 +19,6 @@
 
 - name: Include log2ram tasks
   ansible.builtin.import_tasks: log2ram.yml
+
+- name: Include mDNS tasks
+  ansible.builtin.import_tasks: mdns.yml
